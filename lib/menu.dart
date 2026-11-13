@@ -11,8 +11,8 @@ class MyHomePage extends StatelessWidget {
   static const String kelas = "PBP KKI";
 
   static const List<ItemHomepage> items = [
-    ItemHomepage("Lihat Proyek", Icons.folder, Color(0xFF1976D2)),
-    ItemHomepage("Tambah Proyek", Icons.add_circle, Color(0xFF2E7D32)),
+    ItemHomepage("View Projects", Icons.folder, Color(0xFF1976D2)),
+    ItemHomepage("Add Project", Icons.add_circle, Color(0xFF2E7D32)),
     ItemHomepage("Logout", Icons.logout, Color(0xFFD32F2F)),
   ];
 
@@ -46,7 +46,7 @@ class MyHomePage extends StatelessWidget {
                   const Padding(
                     padding: EdgeInsets.only(top: 16.0),
                     child: Text(
-                      'Selamat datang di MyPortfolio Mobile!',
+                      'Welcome to MyPortfolio Mobile!',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18.0,
