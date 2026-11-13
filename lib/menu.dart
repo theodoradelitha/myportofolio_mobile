@@ -11,9 +11,9 @@ class MyHomePage extends StatelessWidget {
   static const String kelas = "PBP KKI";
 
   static const List<ItemHomepage> items = [
-    ItemHomepage("Lihat Proyek", Icons.folder),
-    ItemHomepage("Tambah Proyek", Icons.add_circle),
-    ItemHomepage("Logout", Icons.logout),
+    ItemHomepage("Lihat Proyek", Icons.folder, Color(0xFF1976D2)),
+    ItemHomepage("Tambah Proyek", Icons.add_circle, Color(0xFF2E7D32)),
+    ItemHomepage("Logout", Icons.logout, Color(0xFFD32F2F)),
   ];
 
   @override
