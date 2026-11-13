@@ -1,3 +1,4 @@
+import 'package:myportofolio_mobile/models/experience.dart';
 import 'package:myportofolio_mobile/models/project.dart';
 
 /// Static portfolio content taken from my Django portfolio site.
@@ -38,6 +39,23 @@ abstract final class PortfolioData {
           'IYREF Hackathon 2026. I engineered the Next.js MVP dashboard to '
           'intuitively display AI-powered matchmaking results, connecting '
           'waste-producing factories with compatible recyclers.',
+    ),
+  ];
+
+  static const List<Experience> experiences = [
+    Experience(
+      title: 'COMPFEST 18 - UX Academy Staff',
+      category: 'Volunteer',
+      description:
+          'Managed applicant outreach and facilitated interactive UX camp '
+          'sessions.',
+    ),
+    Experience(
+      title: 'IDS Teaching Assistant',
+      category: 'Part-Time',
+      description:
+          'Assisted students in understanding course material, guided '
+          'practical sessions, and evaluated assignments.',
     ),
   ];
 }

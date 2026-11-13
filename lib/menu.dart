@@ -3,6 +3,7 @@ import 'package:myportofolio_mobile/data/portfolio_data.dart';
 import 'package:myportofolio_mobile/models/item_homepage.dart';
 import 'package:myportofolio_mobile/screens/project_form_page.dart';
 import 'package:myportofolio_mobile/screens/project_list_page.dart';
+import 'package:myportofolio_mobile/widgets/about_sheet.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/item_card.dart';
 import 'package:myportofolio_mobile/widgets/profile_header.dart';
@@ -27,6 +28,12 @@ class MyHomePage extends StatelessWidget {
       Color(0xFF2E7D32),
       onTap: _openProjectForm,
     ),
+    ItemHomepage(
+      "About Me",
+      Icons.person,
+      Color(0xFF673AB7),
+      onTap: _showAboutSheet,
+    ),
     ItemHomepage("Logout", Icons.logout, Color(0xFFD32F2F)),
   ];
 
@@ -38,6 +45,15 @@ class MyHomePage extends StatelessWidget {
   static void _openProjectForm(BuildContext context) {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (_) => const ProjectFormPage()));
+  }
+
+  static void _showAboutSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => const AboutSheet(name: nama),
+    );
   }
 
   @override
