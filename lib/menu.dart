@@ -34,7 +34,12 @@ class MyHomePage extends StatelessWidget {
       Color(0xFF673AB7),
       onTap: _showAboutSheet,
     ),
-    ItemHomepage("Logout", Icons.logout, Color(0xFFD32F2F)),
+    ItemHomepage(
+      "Logout",
+      Icons.logout,
+      Color(0xFFD32F2F),
+      onTap: _confirmLogout,
+    ),
   ];
 
   static void _openProjectList(BuildContext context) {
@@ -54,6 +59,40 @@ class MyHomePage extends StatelessWidget {
       isScrollControlled: true,
       builder: (_) => const AboutSheet(name: nama),
     );
+  }
+
+  static Future<void> _confirmLogout(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Log out?'),
+        content: const Text('Are you sure you want to log out of MyPortfolio?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    // There is no login yet, so be upfront instead of pretending to log out.
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Logout will work once the app is connected to Django '
+            'authentication.',
+          ),
+        ),
+      );
   }
 
   @override
