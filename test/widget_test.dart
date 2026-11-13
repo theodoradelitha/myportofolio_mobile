@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:myportofolio_mobile/data/project_store.dart';
 import 'package:myportofolio_mobile/main.dart';
 import 'package:myportofolio_mobile/menu.dart';
+import 'package:myportofolio_mobile/theme/app_colors.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/item_card.dart';
 
@@ -200,6 +201,26 @@ void main() {
         find.textContaining('connected to Django authentication'),
         findsOneWidget,
       );
+    });
+  });
+
+  group('Theme', () {
+    double contrastRatio(Color a, Color b) {
+      final la = a.computeLuminance();
+      final lb = b.computeLuminance();
+      final lighter = la > lb ? la : lb;
+      final darker = la > lb ? lb : la;
+      return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    test('cream text on every action card meets WCAG AA contrast', () {
+      for (final item in MyHomePage.items) {
+        expect(
+          contrastRatio(item.color, AppColors.cream),
+          greaterThanOrEqualTo(4.5),
+          reason: '${item.name} card',
+        );
+      }
     });
   });
 }

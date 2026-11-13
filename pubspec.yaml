@@ -57,6 +57,28 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Fonts from my portfolio website (converted from woff2).
+  fonts:
+    - family: Butler
+      fonts:
+        - asset: assets/fonts/butler/Butler-Regular.otf
+        - asset: assets/fonts/butler/Butler-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/butler/Butler-Bold.otf
+          weight: 700
+    - family: TT Chocolates
+      fonts:
+        - asset: assets/fonts/tt_chocolates/TTChocolates-Regular.otf
+        - asset: assets/fonts/tt_chocolates/TTChocolates-Medium.otf
+          weight: 500
+        - asset: assets/fonts/tt_chocolates/TTChocolates-DemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/tt_chocolates/TTChocolates-Bold.ttf
+          weight: 700
+    - family: Genty
+      fonts:
+        - asset: assets/fonts/genty/Genty-Regular.ttf
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

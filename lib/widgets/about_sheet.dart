@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myportofolio_mobile/data/portfolio_data.dart';
+import 'package:myportofolio_mobile/widgets/portfolio_star.dart';
 
 class AboutSheet extends StatelessWidget {
   final String name;
@@ -8,6 +9,7 @@ class AboutSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return SafeArea(
@@ -18,23 +20,39 @@ class AboutSheet extends StatelessWidget {
           Text(
             name,
             style: textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4.0),
-          Text(PortfolioData.roles.join(' • '), style: textTheme.bodyMedium),
-          const SizedBox(height: 20.0),
           Text(
-            'Experience',
-            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            PortfolioData.roles.join(' • '),
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
+          const Divider(height: 32.0),
+          Text('Experience', style: textTheme.titleLarge),
           for (final experience in PortfolioData.experiences)
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.work_outline),
-              title: Text(experience.title),
-              subtitle: Text(
-                '${experience.category} · ${experience.description}',
+              leading: const PortfolioStar(size: 22.0),
+              title: Text(
+                experience.title,
+                style: textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    experience.category.toUpperCase(),
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.secondary,
+                    ),
+                  ),
+                  Text(experience.description),
+                ],
               ),
             ),
         ],

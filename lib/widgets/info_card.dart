@@ -8,30 +8,42 @@ class InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Card(
-      elevation: 2.0,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              title,
-              style: textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+              title.toUpperCase(),
+              style: textTheme.labelSmall?.copyWith(
+                color: colorScheme.secondary,
               ),
             ),
-            const SizedBox(height: 8.0),
-            Text(
-              content,
-              textAlign: TextAlign.center,
-              style: textTheme.bodyMedium,
+            const SizedBox(height: 6.0),
+            _fitValue(
+              Text(
+                content,
+                textAlign: TextAlign.center,
+                style: textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  /// Multi-word values (like a full name) wrap at spaces. A single long word
+  /// (like the NPM) would be split mid-number on narrow screens, so it is
+  /// scaled down to fit instead.
+  Widget _fitValue(Widget text) {
+    if (content.contains(' ')) return text;
+    return FittedBox(fit: BoxFit.scaleDown, child: text);
   }
 }

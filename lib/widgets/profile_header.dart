@@ -1,70 +1,66 @@
-import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
+import 'package:flutter/material.dart';
+import 'package:myportofolio_mobile/widgets/portfolio_star.dart';
+
+/// Welcome section modelled on the hero of my portfolio website: a serif
+/// heading, outlined role chips and two tilted stars on the sides.
 class ProfileHeader extends StatelessWidget {
   final String name;
   final List<String> roles;
 
   const ProfileHeader({super.key, required this.name, required this.roles});
 
+  static const double _starTilt = 15 * math.pi / 180;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [colorScheme.primary, colorScheme.tertiary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return Stack(
+      // Pass the full width through so the content is centered on the page,
+      // not shrunk to its own width at the top-left of the Stack.
+      fit: StackFit.passthrough,
+      children: [
+        const Positioned(
+          top: 0,
+          left: 0,
+          child: PortfolioStar(size: 36.0, angle: -_starTilt),
         ),
-        borderRadius: BorderRadius.circular(16.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Welcome to MyPortfolio Mobile!',
-            style: textTheme.titleLarge?.copyWith(
-              color: colorScheme.onPrimary,
-              fontWeight: FontWeight.bold,
-            ),
+        const Positioned(
+          right: 0,
+          bottom: 0,
+          child: PortfolioStar(size: 42.0, angle: _starTilt),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 8.0),
+          child: Column(
+            children: [
+              Text(
+                'Welcome to MyPortfolio Mobile!',
+                textAlign: TextAlign.center,
+                style: textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 4.0),
+              Text(
+                "Hi, I'm $name.",
+                textAlign: TextAlign.center,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children: roles.map((role) => Chip(label: Text(role))).toList(),
+              ),
+            ],
           ),
-          const SizedBox(height: 4.0),
-          Text(
-            "Hi, I'm $name.",
-            style: textTheme.bodyMedium?.copyWith(color: colorScheme.onPrimary),
-          ),
-          const SizedBox(height: 12.0),
-          Wrap(
-            spacing: 8.0,
-            runSpacing: 8.0,
-            children: roles.map((role) => _RoleTag(role)).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RoleTag extends StatelessWidget {
-  final String label;
-
-  const _RoleTag(this.label);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(color: Colors.white, fontSize: 12.0),
-      ),
+        ),
+      ],
     );
   }
 }

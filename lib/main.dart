@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myportofolio_mobile/menu.dart';
+import 'package:myportofolio_mobile/theme/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,27 +11,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = ColorScheme.fromSeed(seedColor: Colors.indigo);
-
     return MaterialApp(
       title: 'MyPortfolio',
-      theme: ThemeData(
-        colorScheme: colorScheme,
-        useMaterial3: true,
-        appBarTheme: AppBarTheme(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          centerTitle: true,
-          titleTextStyle: TextStyle(
-            color: colorScheme.onPrimary,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        snackBarTheme: const SnackBarThemeData(
-          behavior: SnackBarBehavior.floating,
-        ),
-      ),
+      theme: AppTheme.light,
       home: const MyHomePage(),
     );
   }

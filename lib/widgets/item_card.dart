@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myportofolio_mobile/models/item_homepage.dart';
+import 'package:myportofolio_mobile/theme/app_colors.dart';
 
 class ItemCard extends StatelessWidget {
   final ItemHomepage item;
@@ -8,11 +9,17 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Material(
       color: item.color,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(20),
+      elevation: 3,
+      shadowColor: const Color(0x40000000),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
+        splashColor: AppColors.cream.withValues(alpha: 0.2),
+        highlightColor: AppColors.cream.withValues(alpha: 0.1),
         onTap: () {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
@@ -26,13 +33,13 @@ class ItemCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(item.icon, color: Colors.white, size: 30.0),
-              const SizedBox(height: 6.0),
+              Icon(item.icon, color: AppColors.cream, size: 32.0),
+              const SizedBox(height: 8.0),
               Text(
                 item.name,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: textTheme.titleSmall?.copyWith(
+                  color: AppColors.cream,
                   fontWeight: FontWeight.w600,
                 ),
               ),

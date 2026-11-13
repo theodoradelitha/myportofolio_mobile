@@ -3,6 +3,7 @@ import 'package:myportofolio_mobile/data/portfolio_data.dart';
 import 'package:myportofolio_mobile/models/item_homepage.dart';
 import 'package:myportofolio_mobile/screens/project_form_page.dart';
 import 'package:myportofolio_mobile/screens/project_list_page.dart';
+import 'package:myportofolio_mobile/theme/app_colors.dart';
 import 'package:myportofolio_mobile/widgets/about_sheet.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/item_card.dart';
@@ -19,25 +20,25 @@ class MyHomePage extends StatelessWidget {
     ItemHomepage(
       "View Projects",
       Icons.folder,
-      Color(0xFF1976D2),
+      AppColors.maroonMain,
       onTap: _openProjectList,
     ),
     ItemHomepage(
       "Add Project",
       Icons.add_circle,
-      Color(0xFF2E7D32),
+      AppColors.olive,
       onTap: _openProjectForm,
     ),
     ItemHomepage(
       "About Me",
       Icons.person,
-      Color(0xFF673AB7),
+      AppColors.maroonMuted,
       onTap: _showAboutSheet,
     ),
     ItemHomepage(
       "Logout",
       Icons.logout,
-      Color(0xFFD32F2F),
+      AppColors.maroonWineRed,
       onTap: _confirmLogout,
     ),
   ];
@@ -73,6 +74,10 @@ class MyHomePage extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           FilledButton(
+            // Destructive action, styled like `.button-danger` on the website.
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.maroonWineRed,
+            ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: const Text('Logout'),
           ),
@@ -126,13 +131,15 @@ class MyHomePage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16.0),
+                const SizedBox(height: 24.0),
                 const ProfileHeader(name: nama, roles: PortfolioData.roles),
                 const SizedBox(height: 24.0),
                 Text(
                   'Quick Actions',
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                  style: textTheme.titleLarge?.copyWith(
+                    decoration: TextDecoration.underline,
+                    decorationColor: textTheme.titleLarge?.color,
+                    decorationThickness: 2.0,
                   ),
                 ),
                 const SizedBox(height: 12.0),

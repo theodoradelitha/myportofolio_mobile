@@ -106,10 +106,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
             const SizedBox(height: 16.0),
             TextFormField(
               controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Project title',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: 'Project title'),
               textInputAction: TextInputAction.next,
               validator: _validateTitle,
             ),
@@ -120,7 +117,6 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                 labelText: 'Tech stack',
                 hintText: 'e.g. Flutter, Dart, Django',
                 helperText: 'Separate technologies with commas.',
-                border: OutlineInputBorder(),
               ),
               textInputAction: TextInputAction.next,
               validator: _validateTechStack,
@@ -131,7 +127,6 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
               decoration: const InputDecoration(
                 labelText: 'Description',
                 alignLabelWithHint: true,
-                border: OutlineInputBorder(),
               ),
               minLines: 3,
               maxLines: 6,
