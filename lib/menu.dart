@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myportofolio_mobile/data/portfolio_data.dart';
 import 'package:myportofolio_mobile/models/item_homepage.dart';
+import 'package:myportofolio_mobile/screens/project_list_page.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/item_card.dart';
 import 'package:myportofolio_mobile/widgets/profile_header.dart';
@@ -13,10 +14,20 @@ class MyHomePage extends StatelessWidget {
   static const String kelas = "PBP KKI";
 
   static const List<ItemHomepage> items = [
-    ItemHomepage("View Projects", Icons.folder, Color(0xFF1976D2)),
+    ItemHomepage(
+      "View Projects",
+      Icons.folder,
+      Color(0xFF1976D2),
+      onTap: _openProjectList,
+    ),
     ItemHomepage("Add Project", Icons.add_circle, Color(0xFF2E7D32)),
     ItemHomepage("Logout", Icons.logout, Color(0xFFD32F2F)),
   ];
+
+  static void _openProjectList(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const ProjectListPage()));
+  }
 
   @override
   Widget build(BuildContext context) {

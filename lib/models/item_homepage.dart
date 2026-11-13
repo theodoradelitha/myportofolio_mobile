@@ -5,5 +5,9 @@ class ItemHomepage {
   final IconData icon;
   final Color color;
 
-  const ItemHomepage(this.name, this.icon, this.color);
+  /// Extra action to run after the card shows its SnackBar, such as opening
+  /// another page. Cards without an action only show the SnackBar.
+  final void Function(BuildContext context)? onTap;
+
+  const ItemHomepage(this.name, this.icon, this.color, {this.onTap});
 }
