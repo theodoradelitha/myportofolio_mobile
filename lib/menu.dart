@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myportofolio_mobile/data/portfolio_data.dart';
 import 'package:myportofolio_mobile/models/item_homepage.dart';
+import 'package:myportofolio_mobile/screens/project_form_page.dart';
 import 'package:myportofolio_mobile/screens/project_list_page.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/item_card.dart';
@@ -20,13 +21,23 @@ class MyHomePage extends StatelessWidget {
       Color(0xFF1976D2),
       onTap: _openProjectList,
     ),
-    ItemHomepage("Add Project", Icons.add_circle, Color(0xFF2E7D32)),
+    ItemHomepage(
+      "Add Project",
+      Icons.add_circle,
+      Color(0xFF2E7D32),
+      onTap: _openProjectForm,
+    ),
     ItemHomepage("Logout", Icons.logout, Color(0xFFD32F2F)),
   ];
 
   static void _openProjectList(BuildContext context) {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (_) => const ProjectListPage()));
+  }
+
+  static void _openProjectForm(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const ProjectFormPage()));
   }
 
   @override

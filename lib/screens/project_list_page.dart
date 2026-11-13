@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myportofolio_mobile/data/project_store.dart';
 import 'package:myportofolio_mobile/models/project.dart';
+import 'package:myportofolio_mobile/screens/project_form_page.dart';
 import 'package:myportofolio_mobile/widgets/project_card.dart';
 
 class ProjectListPage extends StatelessWidget {
@@ -10,11 +11,17 @@ class ProjectListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('My Projects')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const ProjectFormPage())),
+        icon: const Icon(Icons.add),
+        label: const Text('Add Project'),
+      ),
       body: ValueListenableBuilder<List<Project>>(
         valueListenable: ProjectStore.projects,
         builder: (context, projects, _) {
           return ListView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 88.0),
             children: [
               const _DataSourceNote(),
               const SizedBox(height: 8.0),
