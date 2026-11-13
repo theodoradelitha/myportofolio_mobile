@@ -4,12 +4,13 @@ import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/item_card.dart';
 
 class MyHomePage extends StatelessWidget {
-  MyHomePage({super.key});
-  final String npm = "2506553585";
-  final String nama = "Delitha";
-  final String kelas = "PBP KKI";
+  const MyHomePage({super.key});
 
-  final List<ItemHomepage> items = [
+  static const String npm = "2506553585";
+  static const String nama = "Delitha Theodora";
+  static const String kelas = "PBP KKI";
+
+  static const List<ItemHomepage> items = [
     ItemHomepage("Lihat Proyek", Icons.folder),
     ItemHomepage("Tambah Proyek", Icons.add_circle),
     ItemHomepage("Logout", Icons.logout),
@@ -33,9 +34,9 @@ class MyHomePage extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                InfoCard(title: 'NPM', content: npm),
-                InfoCard(title: 'Name', content: nama),
-                InfoCard(title: 'Class', content: kelas),
+                const InfoCard(title: 'NPM', content: npm),
+                const InfoCard(title: 'Name', content: nama),
+                const InfoCard(title: 'Class', content: kelas),
               ],
             ),
             const SizedBox(height: 16.0),
