@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/theme/app_colors.dart';
 
 /// App-wide theme that mirrors the look of my portfolio website.

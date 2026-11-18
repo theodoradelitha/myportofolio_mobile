@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_data.dart';
 import 'package:myportofolio_mobile/widgets/portfolio_star.dart';
 

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The star decoration used across my portfolio website
 /// (`static/img/projects-star.svg`), drawn with a CustomPainter so the app
