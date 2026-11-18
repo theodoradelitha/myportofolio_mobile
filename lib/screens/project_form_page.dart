@@ -119,7 +119,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _ProjectDetail(label: 'Title', value: project.title),
-              _ProjectDetail(label: 'Category', value: _category),
+              _ProjectDetail(label: 'Category', value: project.category!),
               _ProjectDetail(
                 label: 'Tech stack',
                 value: project.techStack.join(', '),
@@ -161,83 +161,89 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
       drawer: const LeftDrawer(current: DrawerDestination.addProject),
       body: Form(
         key: _formKey,
-        child: ListView(
+        // A Column inside SingleChildScrollView builds every field at once.
+        // A lazy ListView would dispose fields scrolled far off-screen, and
+        // the Form can only validate and reset fields that still exist.
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
-          children: [
-            Text(
-              'Saved projects appear in View Projects until the app is '
-              'closed. They are not sent to my Django portfolio yet.',
-              style: TextStyle(color: colorScheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Project title'),
-              textInputAction: TextInputAction.next,
-              validator: _validateTitle,
-            ),
-            const SizedBox(height: 16.0),
-            DropdownButtonFormField<String>(
-              // initialValue replaces the deprecated `value` parameter. It is
-              // read when the field is created and again when the form is
-              // reset, so it points at the default, not the current choice.
-              initialValue: _categories.first,
-              // Fill the field's width instead of sizing to the longest
-              // category, which overflows on narrow screens.
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Category'),
-              items: _categories
-                  .map(
-                    (category) => DropdownMenuItem(
-                      value: category,
-                      child: Text(category),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (String? newValue) {
-                if (newValue == null) return;
-                setState(() => _category = newValue);
-              },
-            ),
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _techStackController,
-              decoration: const InputDecoration(
-                labelText: 'Tech stack',
-                hintText: 'e.g. Flutter, Dart, Django',
-                helperText: 'Separate technologies with commas.',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Saved projects appear in View Projects until the app is '
+                'closed. They are not sent to my Django portfolio yet.',
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
-              textInputAction: TextInputAction.next,
-              validator: _validateTechStack,
-            ),
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                alignLabelWithHint: true,
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(labelText: 'Project title'),
+                textInputAction: TextInputAction.next,
+                validator: _validateTitle,
               ),
-              minLines: 3,
-              maxLines: 6,
-              validator: _validateDescription,
-            ),
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _linkController,
-              decoration: const InputDecoration(
-                labelText: 'Project link',
-                hintText: 'https://… (optional)',
+              const SizedBox(height: 16.0),
+              DropdownButtonFormField<String>(
+                // initialValue replaces the deprecated `value` parameter. It is
+                // read when the field is created and again when the form is
+                // reset, so it points at the default, not the current choice.
+                initialValue: _categories.first,
+                // Fill the field's width instead of sizing to the longest
+                // category, which overflows on narrow screens.
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Category'),
+                items: _categories
+                    .map(
+                      (category) => DropdownMenuItem(
+                        value: category,
+                        child: Text(category),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (String? newValue) {
+                  if (newValue == null) return;
+                  setState(() => _category = newValue);
+                },
               ),
-              keyboardType: TextInputType.url,
-              validator: _validateLink,
-            ),
-            const SizedBox(height: 24.0),
-            FilledButton.icon(
-              onPressed: _submit,
-              icon: const Icon(Icons.save),
-              label: const Text('Save Project'),
-            ),
-          ],
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _techStackController,
+                decoration: const InputDecoration(
+                  labelText: 'Tech stack',
+                  hintText: 'e.g. Flutter, Dart, Django',
+                  helperText: 'Separate technologies with commas.',
+                ),
+                textInputAction: TextInputAction.next,
+                validator: _validateTechStack,
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  alignLabelWithHint: true,
+                ),
+                minLines: 3,
+                maxLines: 6,
+                validator: _validateDescription,
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _linkController,
+                decoration: const InputDecoration(
+                  labelText: 'Project link',
+                  hintText: 'https://… (optional)',
+                ),
+                keyboardType: TextInputType.url,
+                validator: _validateLink,
+              ),
+              const SizedBox(height: 24.0),
+              FilledButton.icon(
+                onPressed: _submit,
+                icon: const Icon(Icons.save),
+                label: const Text('Save Project'),
+              ),
+            ],
+          ),
         ),
       ),
     );
