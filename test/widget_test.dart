@@ -23,6 +23,21 @@ void main() {
     await tester.ensureVisible(card);
     await tester.tap(card);
     await tester.pumpAndSettle();
+    // The card's floating SnackBar would otherwise cover buttons at the
+    // bottom of the next screen.
+    tester
+        .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
+        .removeCurrentSnackBar();
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> tapSave(WidgetTester tester) async {
+    final button = find.text('Save Project');
+    await tester.ensureVisible(button);
+    // Lay out the scrolled list before reading the button's position.
+    await tester.pumpAndSettle();
+    await tester.tap(button);
+    await tester.pumpAndSettle();
   }
 
   Future<void> openDrawerAndTap(WidgetTester tester, String entry) async {
@@ -135,8 +150,7 @@ void main() {
         find.widgetWithText(TextFormField, 'Description'),
         'Too short',
       );
-      await tester.tap(find.text('Save Project'));
-      await tester.pumpAndSettle();
+      await tapSave(tester);
 
       expect(find.text('Project title cannot be empty.'), findsOneWidget);
       expect(find.text('Add at least one technology.'), findsOneWidget);
@@ -145,6 +159,65 @@ void main() {
         findsOneWidget,
       );
       expect(ProjectStore.projects.value.length, 3);
+    });
+
+    testWidgets('an invalid link is rejected but an empty one is allowed', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await tapCard(tester, 'Add Project');
+      final linkField = find.widgetWithText(TextFormField, 'Project link');
+
+      await tester.enterText(linkField, 'not a link');
+      await tapSave(tester);
+      expect(
+        find.text('Enter a full link starting with http:// or https://'),
+        findsOneWidget,
+      );
+
+      await tester.enterText(linkField, '');
+      await tapSave(tester);
+      expect(
+        find.text('Enter a full link starting with http:// or https://'),
+        findsNothing,
+      );
+    });
+
+    testWidgets('saves the chosen category and link with the project', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await tapCard(tester, 'Add Project');
+
+      // The dropdown starts on the first category.
+      expect(find.text('Web Development'), findsOneWidget);
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+      // The open menu also lists the items, so tap the last match.
+      await tester.tap(find.text('Mobile Development').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Project title'),
+        'MyPortfolio Mobile',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Tech stack'),
+        'Flutter, Dart',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Description'),
+        'Flutter client for my personal portfolio website.',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Project link'),
+        'https://github.com/example/myportofolio_mobile',
+      );
+      await tapSave(tester);
+
+      final saved = ProjectStore.projects.value.last;
+      expect(saved.category, 'Mobile Development');
+      expect(saved.link, 'https://github.com/example/myportofolio_mobile');
     });
 
     testWidgets('a valid project appears in View Projects', (tester) async {
@@ -163,8 +236,7 @@ void main() {
         find.widgetWithText(TextFormField, 'Description'),
         'Flutter client for my personal portfolio website.',
       );
-      await tester.tap(find.text('Save Project'));
-      await tester.pumpAndSettle();
+      await tapSave(tester);
 
       expect(find.byType(MyHomePage), findsOneWidget);
       expect(ProjectStore.projects.value.length, 4);

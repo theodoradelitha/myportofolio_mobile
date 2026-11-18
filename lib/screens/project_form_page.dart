@@ -16,16 +16,29 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
   static const int _maxTechStackLength = 200;
   static const int _minDescriptionLength = 20;
 
+  static const List<String> _categories = [
+    'Web Development',
+    'Mobile Development',
+    'Machine Learning',
+    'Data Science',
+    'Other',
+  ];
+
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _techStackController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _linkController = TextEditingController();
+
+  /// The dropdown has no controller, so its value is kept in state.
+  String _category = _categories.first;
 
   @override
   void dispose() {
     _titleController.dispose();
     _techStackController.dispose();
     _descriptionController.dispose();
+    _linkController.dispose();
     super.dispose();
   }
 
@@ -57,6 +70,20 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
     return null;
   }
 
+  /// The link is optional, but if one is given it must be a full web address.
+  String? _validateLink(String? value) {
+    final link = value?.trim() ?? '';
+    if (link.isEmpty) return null;
+
+    final uri = Uri.tryParse(link);
+    final isWebUrl =
+        uri != null &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.host.isNotEmpty;
+    if (!isWebUrl) return 'Enter a full link starting with http:// or https://';
+    return null;
+  }
+
   List<String> _parseTechStack(String input) {
     return input
         .split(',')
@@ -68,10 +95,13 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
+    final link = _linkController.text.trim();
     final project = Project(
       title: _titleController.text.trim(),
       techStack: _parseTechStack(_techStackController.text),
       description: _descriptionController.text.trim(),
+      category: _category,
+      link: link.isEmpty ? null : link,
       isLocalDraft: true,
     );
     ProjectStore.add(project);
@@ -113,6 +143,25 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
               validator: _validateTitle,
             ),
             const SizedBox(height: 16.0),
+            DropdownButtonFormField<String>(
+              // initialValue replaces the deprecated `value` parameter. It is
+              // only read when the field is created or reset.
+              initialValue: _category,
+              decoration: const InputDecoration(labelText: 'Category'),
+              items: _categories
+                  .map(
+                    (category) => DropdownMenuItem(
+                      value: category,
+                      child: Text(category),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (String? newValue) {
+                if (newValue == null) return;
+                setState(() => _category = newValue);
+              },
+            ),
+            const SizedBox(height: 16.0),
             TextFormField(
               controller: _techStackController,
               decoration: const InputDecoration(
@@ -133,6 +182,16 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
               minLines: 3,
               maxLines: 6,
               validator: _validateDescription,
+            ),
+            const SizedBox(height: 16.0),
+            TextFormField(
+              controller: _linkController,
+              decoration: const InputDecoration(
+                labelText: 'Project link',
+                hintText: 'https://… (optional)',
+              ),
+              keyboardType: TextInputType.url,
+              validator: _validateLink,
             ),
             const SizedBox(height: 24.0),
             FilledButton.icon(
