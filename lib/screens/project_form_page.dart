@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/project_store.dart';
 import 'package:myportofolio_mobile/models/project.dart';
+import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 
 class ProjectFormPage extends StatefulWidget {
   const ProjectFormPage({super.key});
@@ -93,6 +94,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Add Project')),
+      drawer: const LeftDrawer(current: DrawerDestination.addProject),
       body: Form(
         key: _formKey,
         child: ListView(

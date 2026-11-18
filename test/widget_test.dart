@@ -3,9 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:myportofolio_mobile/data/project_store.dart';
 import 'package:myportofolio_mobile/main.dart';
 import 'package:myportofolio_mobile/menu.dart';
+import 'package:myportofolio_mobile/screens/project_form_page.dart';
+import 'package:myportofolio_mobile/screens/project_list_page.dart';
 import 'package:myportofolio_mobile/theme/app_colors.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/item_card.dart';
+import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 
 void main() {
   setUp(ProjectStore.reset);
@@ -21,6 +24,17 @@ void main() {
     await tester.tap(card);
     await tester.pumpAndSettle();
   }
+
+  Future<void> openDrawerAndTap(WidgetTester tester, String entry) async {
+    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ListTile, entry));
+    await tester.pumpAndSettle();
+  }
+
+  /// Counts screens in the whole route stack, including covered ones.
+  int screensInStack(Type type) =>
+      find.byType(type, skipOffstage: false).evaluate().length;
 
   group('Home page', () {
     testWidgets('shows my NPM, full name and class in three InfoCards', (
@@ -161,6 +175,68 @@ void main() {
       expect(find.text('MyPortfolio Mobile'), findsOneWidget);
       expect(find.text('Flutter'), findsOneWidget);
       expect(find.text('Not synced'), findsOneWidget);
+    });
+  });
+
+  group('Drawer navigation', () {
+    testWidgets('opens from the home screen and lists every screen', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await tester.tap(find.byTooltip('Open navigation menu'));
+      await tester.pumpAndSettle();
+
+      final drawer = find.byType(LeftDrawer);
+      expect(drawer, findsOneWidget);
+      for (final entry in ['Home', 'View Projects', 'Add Project']) {
+        expect(
+          find.descendant(of: drawer, matching: find.text(entry)),
+          findsOneWidget,
+        );
+      }
+    });
+
+    testWidgets('Home returns to the existing home screen', (tester) async {
+      await pumpApp(tester);
+      await openDrawerAndTap(tester, 'Add Project');
+      expect(find.byType(ProjectFormPage), findsOneWidget);
+
+      await openDrawerAndTap(tester, 'Home');
+
+      expect(find.byType(MyHomePage), findsOneWidget);
+      expect(screensInStack(MyHomePage), 1);
+      expect(screensInStack(ProjectFormPage), 0);
+    });
+
+    testWidgets('never stacks the same screen twice', (tester) async {
+      await pumpApp(tester);
+      // Home -> View Projects -> Add Project (through the list's button).
+      await tapCard(tester, 'View Projects');
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      await openDrawerAndTap(tester, 'View Projects');
+
+      expect(find.byType(ProjectListPage), findsOneWidget);
+      expect(screensInStack(ProjectListPage), 1);
+      expect(screensInStack(ProjectFormPage), 0);
+
+      // The system Back button now goes straight home.
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(MyHomePage), findsOneWidget);
+    });
+
+    testWidgets('Add Project card pushes the form and Back returns home', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await tapCard(tester, 'Add Project');
+      expect(find.byType(ProjectFormPage), findsOneWidget);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(MyHomePage), findsOneWidget);
     });
   });
 

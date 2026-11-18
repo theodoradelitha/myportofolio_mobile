@@ -7,6 +7,7 @@ import 'package:myportofolio_mobile/theme/app_colors.dart';
 import 'package:myportofolio_mobile/widgets/about_sheet.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/item_card.dart';
+import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/profile_header.dart';
 
 class MyHomePage extends StatelessWidget {
@@ -106,6 +107,7 @@ class MyHomePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('MyPortfolio')),
+      drawer: const LeftDrawer(current: DrawerDestination.home),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Center(
