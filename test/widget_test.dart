@@ -218,6 +218,17 @@ void main() {
       final saved = ProjectStore.projects.value.last;
       expect(saved.category, 'Mobile Development');
       expect(saved.link, 'https://github.com/example/myportofolio_mobile');
+      expect(find.text('Category: Mobile Development'), findsOneWidget);
+      expect(
+        find.text('Link: https://github.com/example/myportofolio_mobile'),
+        findsOneWidget,
+      );
+
+      // After OK the dropdown is back on its default category.
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(find.text('Mobile Development'), findsNothing);
+      expect(find.text('Web Development'), findsOneWidget);
     });
 
     testWidgets('a valid project appears in View Projects', (tester) async {
@@ -237,11 +248,42 @@ void main() {
         'Flutter client for my personal portfolio website.',
       );
       await tapSave(tester);
-
-      expect(find.byType(MyHomePage), findsOneWidget);
       expect(ProjectStore.projects.value.length, 4);
 
-      await tapCard(tester, 'View Projects');
+      // The dialog lists what was entered, then OK clears the form.
+      final dialog = find.byType(AlertDialog);
+      expect(
+        find.descendant(
+          of: dialog,
+          matching: find.text('Project added successfully!'),
+        ),
+        findsOneWidget,
+      );
+      for (final line in [
+        'Title: MyPortfolio Mobile',
+        'Category: Web Development',
+        'Tech stack: Flutter, Dart',
+        'Description: Flutter client for my personal portfolio website.',
+        'Link: -',
+      ]) {
+        expect(
+          find.descendant(of: dialog, matching: find.text(line)),
+          findsOneWidget,
+        );
+      }
+
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      expect(dialog, findsNothing);
+      expect(find.byType(ProjectFormPage), findsOneWidget);
+      for (final field in tester.widgetList<TextFormField>(
+        find.byType(TextFormField),
+      )) {
+        expect(field.controller!.text, isEmpty);
+      }
+
+      await openDrawerAndTap(tester, 'View Projects');
       await tester.scrollUntilVisible(find.text('MyPortfolio Mobile'), 200);
 
       expect(find.text('MyPortfolio Mobile'), findsOneWidget);

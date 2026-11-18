@@ -92,7 +92,8 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
         .toList();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
+    // Runs every field's validator and shows their error messages.
     if (!_formKey.currentState!.validate()) return;
 
     final link = _linkController.text.trim();
@@ -106,16 +107,49 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
     );
     ProjectStore.add(project);
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            '"${project.title}" was added to View Projects for this session.',
+    // showDialog pushes the dialog as a new route and its Future completes
+    // when that route is popped, by OK or by tapping outside the dialog.
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Project added successfully!'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _ProjectDetail(label: 'Title', value: project.title),
+              _ProjectDetail(label: 'Category', value: _category),
+              _ProjectDetail(
+                label: 'Tech stack',
+                value: project.techStack.join(', '),
+              ),
+              _ProjectDetail(label: 'Description', value: project.description),
+              _ProjectDetail(label: 'Link', value: project.link ?? '-'),
+            ],
           ),
         ),
-      );
-    Navigator.of(context).pop();
+        actions: [
+          TextButton(
+            // Pop with the dialog's own context so only the dialog closes.
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+
+    // The page may have been closed while the dialog was open.
+    if (!mounted) return;
+    _resetForm();
+  }
+
+  /// Clears every field so another project can be entered.
+  void _resetForm() {
+    // reset() sets each field back to its initial value: empty text for the
+    // controller-backed fields and the default category for the dropdown.
+    _formKey.currentState!.reset();
+    setState(() => _category = _categories.first);
   }
 
   @override
@@ -131,8 +165,8 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
           padding: const EdgeInsets.all(16.0),
           children: [
             Text(
-              'Projects added here are kept in memory only and are not sent '
-              'to my Django portfolio yet.',
+              'Saved projects appear in View Projects until the app is '
+              'closed. They are not sent to my Django portfolio yet.',
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 16.0),
@@ -145,8 +179,9 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
             const SizedBox(height: 16.0),
             DropdownButtonFormField<String>(
               // initialValue replaces the deprecated `value` parameter. It is
-              // only read when the field is created or reset.
-              initialValue: _category,
+              // read when the field is created and again when the form is
+              // reset, so it points at the default, not the current choice.
+              initialValue: _categories.first,
               decoration: const InputDecoration(labelText: 'Category'),
               items: _categories
                   .map(
@@ -199,6 +234,32 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
               icon: const Icon(Icons.save),
               label: const Text('Save Project'),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One "Label: value" line in the confirmation dialog.
+class _ProjectDetail extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ProjectDetail({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: '$label: ',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            TextSpan(text: value),
           ],
         ),
       ),
