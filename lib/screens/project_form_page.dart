@@ -182,6 +182,9 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
               // read when the field is created and again when the form is
               // reset, so it points at the default, not the current choice.
               initialValue: _categories.first,
+              // Fill the field's width instead of sizing to the longest
+              // category, which overflows on narrow screens.
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'Category'),
               items: _categories
                   .map(

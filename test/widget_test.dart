@@ -231,6 +231,53 @@ void main() {
       expect(find.text('Web Development'), findsOneWidget);
     });
 
+    testWidgets('validates the whole form on a short screen', (tester) async {
+      tester.view.physicalSize = const Size(320, 480);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      Future<void> fill(String label, String text) async {
+        final field = find.widgetWithText(TextFormField, label);
+        await tester.ensureVisible(field);
+        await tester.pumpAndSettle();
+        await tester.enterText(field, text);
+      }
+
+      await pumpApp(tester);
+      await tapCard(tester, 'Add Project');
+
+      final dropdown = find.byType(DropdownButtonFormField<String>);
+      await tester.ensureVisible(dropdown);
+      await tester.pumpAndSettle();
+      await tester.tap(dropdown);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mobile Development').last);
+      await tester.pumpAndSettle();
+
+      // Leave the title empty and fill everything below it, so the title is
+      // scrolled out of view when Save is pressed.
+      await fill('Tech stack', 'Flutter, Dart');
+      await fill('Description', 'Flutter client for my personal portfolio.');
+      await fill('Project link', 'https://example.com');
+      await tapSave(tester);
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(ProjectStore.projects.value.length, 3);
+      expect(
+        find.text('Project title cannot be empty.', skipOffstage: false),
+        findsOneWidget,
+      );
+      // The off-screen dropdown keeps the chosen category.
+      expect(
+        find.descendant(
+          of: find.byType(DropdownButtonFormField<String>, skipOffstage: false),
+          matching: find.text('Mobile Development', skipOffstage: false),
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('a valid project appears in View Projects', (tester) async {
       await pumpApp(tester);
       await tapCard(tester, 'Add Project');
