@@ -14,9 +14,10 @@ MyPortfolio Mobile is the Flutter client for my personal portfolio website (buil
 - **Welcome header:** styled like the hero section of my website, with a serif greeting, my roles (Front-End Developer, UI/UX Design, UX Researcher) as outlined chips, and two tilted stars on the sides.
 - **Action menu:** four `ItemCard`s, each with its own icon and background color from my website's palette (maroon, olive, dusty rose and wine red). Every tap shows a `SnackBar`: *"You pressed the [Button Name] button!"*
   - **View Projects:** opens a list of my portfolio projects (OH26, DDP026, Symbiocle) with tech-stack chips.
-  - **Add Project:** a validated form (title, tech stack, description). Saved projects show up in View Projects right away, marked *Not synced* because they are kept in memory only.
+  - **Add Project:** a validated form (title, category dropdown, tech stack, description, optional link). Saving shows the entered data in a dialog and clears the form. Saved projects also show up in View Projects, marked *Not synced* because they are kept in memory only.
   - **About Me:** a bottom sheet with my roles and experience.
   - **Logout:** a confirmation dialog. There is no login yet, so confirming tells the user that logout will be connected to Django authentication later instead of pretending to log out.
+- **Drawer navigation:** a `LeftDrawer` on every screen with Home, View Projects and Add Project. Home goes back to the existing home screen, and other screens open on top of home, so the same screen is never stacked twice.
 - **Design matching my portfolio website:** the same maroon and cream palette (`AppColors`, named after the CSS variables of the website), the same fonts (Butler for headings, TT Chocolates for body text, Genty for project titles), outlined chips and the star decoration from the website. All of it is set up once in `AppTheme`, so the widgets don't hardcode their own styles.
 - **Responsive layout:** the page scrolls, the content is width-capped on web/desktop, the action grid switches between 2 and 4 columns, and the layout is tested at 320×640 without overflow.
 - **Widget tests** for all of the above, plus a check that the cream text on every action card meets the WCAG AA contrast ratio.
@@ -26,7 +27,7 @@ MyPortfolio Mobile is the Flutter client for my personal portfolio website (buil
 - Flutter 3.47 (stable), Dart 3.13
 - Material 3 with a custom theme in `lib/theme/` (`AppColors` + `AppTheme`) built from my website's palette
 - Custom fonts (Butler, TT Chocolates, Genty) bundled as assets and declared in `pubspec.yaml`. The files were converted from the woff2 fonts used on my website.
-- No third-party packages besides the defaults from `flutter create`
+- `material_ui` for the Material widgets (the package the Material library moves to in Flutter 3.50). No other third-party packages besides the defaults from `flutter create`
 
 ## Setup & Running
 
@@ -56,7 +57,6 @@ MyPortfolio Mobile is the Flutter client for my personal portfolio website (buil
 ```
 lib/
 ├── main.dart                     # Entry point: MyApp and MaterialApp (uses AppTheme)
-├── menu.dart                     # MyHomePage (StatelessWidget) and its action grid
 ├── models/
 │   ├── item_homepage.dart        # Action card data: name, icon, color, optional action
 │   ├── project.dart              # Project data model
@@ -65,14 +65,16 @@ lib/
 │   ├── portfolio_data.dart       # Static content copied from my Django portfolio
 │   └── project_store.dart        # In-memory project list shared between pages
 ├── screens/
+│   ├── menu.dart                 # MyHomePage (StatelessWidget) and its action grid
 │   ├── project_list_page.dart    # View Projects page
-│   └── project_form_page.dart    # Add Project form (StatefulWidget)
+│   └── project_form_page.dart    # Add Project form (StatefulWidget) and its dialog
 ├── theme/
 │   ├── app_colors.dart           # Color palette from my website's CSS variables
 │   └── app_theme.dart            # ThemeData: colors, fonts and component styles
 └── widgets/
     ├── info_card.dart            # InfoCard
     ├── item_card.dart            # ItemCard (InkWell + SnackBar)
+    ├── left_drawer.dart          # Drawer menu for moving between screens
     ├── profile_header.dart       # Welcome header with role chips and stars
     ├── project_card.dart         # Card for one project
     ├── about_sheet.dart          # About Me bottom sheet
@@ -92,6 +94,7 @@ test/
 
 - **Tutorial 08:** Installed Flutter, created the `myportofolio_mobile` project, split `MyHomePage` into `menu.dart`, changed it to a `StatelessWidget`, and built the `InfoCard` and `ItemCard` widgets from the tutorial.
 - **Assignment 7:** Replaced the sample data with my own identity, gave every action card its own color through the `ItemHomepage` model, made the layout responsive, and added working View Projects, Add Project (with validation), About Me and Logout-confirmation flows. Moved reusable widgets and models into their own folders, switched the UI text to English, and replaced the default counter test with widget tests. Restyled the app to match my portfolio website: its color palette, fonts (Butler, TT Chocolates, Genty), chip and card styles, and the star decoration, all centralized in `AppTheme`. The work was done on the `feat/assignment-seven` branch with Conventional Commits.
+- **Tutorial 09:** Added a `LeftDrawer` for navigating between Home, View Projects and Add Project, extended the Add Project form with a category `DropdownButtonFormField` and an optional, validated project link, showed the submitted data in an `AlertDialog` that resets the form, moved `menu.dart` into `screens/`, and switched the Material imports to `material_ui`. The work was done on the `feat/tutorial-nine` branch.
 
 ---
 
