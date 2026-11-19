@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/portfolio_data.dart';
 import 'package:myportofolio_mobile/models/item_homepage.dart';
+import 'package:myportofolio_mobile/screens/experience_form_page.dart';
 import 'package:myportofolio_mobile/screens/project_form_page.dart';
 import 'package:myportofolio_mobile/screens/project_list_page.dart';
 import 'package:myportofolio_mobile/theme/app_colors.dart';
@@ -31,6 +32,12 @@ class MyHomePage extends StatelessWidget {
       onTap: _openProjectForm,
     ),
     ItemHomepage(
+      "Add Experience",
+      Icons.work,
+      AppColors.vintageBurgundy,
+      onTap: _openExperienceForm,
+    ),
+    ItemHomepage(
       "About Me",
       Icons.person,
       AppColors.maroonMuted,
@@ -52,6 +59,13 @@ class MyHomePage extends StatelessWidget {
   static void _openProjectForm(BuildContext context) {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (_) => const ProjectFormPage()));
+  }
+
+  // push() keeps the home screen underneath, so the system Back button and
+  // the AppBar's back arrow both return to it.
+  static void _openExperienceForm(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const ExperienceFormPage()));
   }
 
   static void _showAboutSheet(BuildContext context) {
@@ -164,7 +178,14 @@ class _ActionGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth >= 560 ? 4 : 2;
+        // A card needs about 135 px of width for its label, so phones get
+        // 2 columns, wider screens 3, and at the full 720 px content width
+        // all five actions fit on one row.
+        final crossAxisCount = switch (constraints.maxWidth) {
+          >= 720 => 5,
+          >= 440 => 3,
+          _ => 2,
+        };
 
         return GridView.count(
           crossAxisCount: crossAxisCount,
