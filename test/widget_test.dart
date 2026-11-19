@@ -1,7 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:myportofolio_mobile/data/experience_store.dart';
 import 'package:myportofolio_mobile/data/project_store.dart';
 import 'package:myportofolio_mobile/main.dart';
+import 'package:myportofolio_mobile/screens/experience_form_page.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/screens/project_form_page.dart';
 import 'package:myportofolio_mobile/screens/project_list_page.dart';
@@ -11,7 +13,10 @@ import 'package:myportofolio_mobile/widgets/item_card.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 
 void main() {
-  setUp(ProjectStore.reset);
+  setUp(() {
+    ProjectStore.reset();
+    ExperienceStore.reset();
+  });
 
   Future<void> pumpApp(WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
@@ -31,8 +36,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> tapSave(WidgetTester tester) async {
-    final button = find.text('Save Project');
+  Future<void> tapSave(
+    WidgetTester tester, {
+    String label = 'Save Project',
+  }) async {
+    final button = find.text(label);
     await tester.ensureVisible(button);
     // Lay out the scrolled list before reading the button's position.
     await tester.pumpAndSettle();
@@ -339,6 +347,279 @@ void main() {
     });
   });
 
+  group('Experience form', () {
+    const saveExperience = 'Save Experience';
+
+    Finder field(String label) => find.widgetWithText(TextFormField, label);
+
+    /// Scrolls to a field first, so this also works on short screens.
+    Future<void> fill(WidgetTester tester, String label, String text) async {
+      await tester.ensureVisible(field(label));
+      await tester.pumpAndSettle();
+      await tester.enterText(field(label), text);
+    }
+
+    Future<void> fillRequired(WidgetTester tester) async {
+      await fill(tester, 'Role / Position', 'Software Engineer Intern');
+      await fill(tester, 'Description', 'Built internal tools in Flutter.');
+    }
+
+    /// Opens the date picker from the End date field and picks the first
+    /// day of the current month, which is never after today.
+    Future<DateTime> pickFirstOfMonth(WidgetTester tester) async {
+      await tester.ensureVisible(field('End date'));
+      await tester.pumpAndSettle();
+      await tester.tap(field('End date'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(DatePickerDialog),
+          matching: find.text('1'),
+        ),
+      );
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      final now = DateTime.now();
+      return DateTime(now.year, now.month);
+    }
+
+    String formatDate(WidgetTester tester, DateTime date) {
+      final context = tester.element(find.byType(ExperienceFormPage));
+      return MaterialLocalizations.of(context).formatShortDate(date);
+    }
+
+    testWidgets('Add Experience card pushes the form and Back returns home', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await tapCard(tester, 'Add Experience');
+
+      expect(find.byType(ExperienceFormPage), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AppBar),
+          matching: find.text('Add Experience'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(MyHomePage), findsOneWidget);
+      expect(screensInStack(ExperienceFormPage), 0);
+    });
+
+    testWidgets('the drawer opens the form and Home returns to home', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await openDrawerAndTap(tester, 'Add Project');
+      await openDrawerAndTap(tester, 'Add Experience');
+
+      expect(find.byType(ExperienceFormPage), findsOneWidget);
+      expect(screensInStack(ProjectFormPage), 0);
+
+      // Its own entry is highlighted and only closes the drawer.
+      await tester.tap(find.byTooltip('Open navigation menu'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<ListTile>(find.widgetWithText(ListTile, 'Add Experience'))
+            .selected,
+        isTrue,
+      );
+      await tester.tap(find.widgetWithText(ListTile, 'Add Experience'));
+      await tester.pumpAndSettle();
+      expect(screensInStack(ExperienceFormPage), 1);
+
+      await openDrawerAndTap(tester, 'Home');
+      expect(find.byType(MyHomePage), findsOneWidget);
+      expect(screensInStack(MyHomePage), 1);
+      expect(screensInStack(ExperienceFormPage), 0);
+    });
+
+    testWidgets('rejects empty and whitespace-only required fields', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await openDrawerAndTap(tester, 'Add Experience');
+
+      await tapSave(tester, label: saveExperience);
+      expect(find.text('Role cannot be empty.'), findsOneWidget);
+      expect(find.text('Description cannot be empty.'), findsOneWidget);
+
+      // Spaces only are trimmed away, so they count as empty too.
+      await fill(tester, 'Role / Position', '   ');
+      await fill(tester, 'Description', '  \n  ');
+      await tapSave(tester, label: saveExperience);
+      expect(find.text('Role cannot be empty.'), findsOneWidget);
+      expect(find.text('Description cannot be empty.'), findsOneWidget);
+
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(ExperienceStore.experiences.value.length, 2);
+    });
+
+    testWidgets('checks the role length and the thumbnail URL', (tester) async {
+      await pumpApp(tester);
+      await openDrawerAndTap(tester, 'Add Experience');
+
+      await fill(tester, 'Role / Position', 'a' * 256);
+      await fill(tester, 'Description', 'Built internal tools in Flutter.');
+      // A URL keyboard does not stop text without http:// or https://.
+      await fill(tester, 'Thumbnail URL', 'www.example.com/thumb.png');
+      await tapSave(tester, label: saveExperience);
+
+      expect(find.text('Role must be at most 255 characters.'), findsOneWidget);
+      expect(
+        find.text('Enter a full link starting with http:// or https://'),
+        findsOneWidget,
+      );
+      expect(find.byType(AlertDialog), findsNothing);
+
+      // Exactly 255 characters and an empty thumbnail are both allowed.
+      await fill(tester, 'Role / Position', 'a' * 255);
+      await fill(tester, 'Thumbnail URL', '');
+      await tapSave(tester, label: saveExperience);
+      expect(find.byType(AlertDialog), findsOneWidget);
+    });
+
+    testWidgets('picks the end date from a date picker and can clear it', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await openDrawerAndTap(tester, 'Add Experience');
+
+      await tester.ensureVisible(field('End date'));
+      await tester.pumpAndSettle();
+      await tester.tap(field('End date'));
+      await tester.pumpAndSettle();
+
+      // Only past dates can be picked, because an end date is for an
+      // experience that has finished.
+      final picker = tester.widget<DatePickerDialog>(
+        find.byType(DatePickerDialog),
+      );
+      expect(picker.firstDate, DateTime(2000));
+      expect(picker.lastDate, DateUtils.dateOnly(DateTime.now()));
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      final picked = await pickFirstOfMonth(tester);
+      expect(
+        tester.widget<TextFormField>(field('End date')).controller!.text,
+        formatDate(tester, picked),
+      );
+
+      await tester.tap(find.byTooltip('Clear end date'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextFormField>(field('End date')).controller!.text,
+        isEmpty,
+      );
+
+      // Without an end date the summary calls the experience ongoing.
+      await fillRequired(tester);
+      await tapSave(tester, label: saveExperience);
+      expect(find.text('End date: Ongoing'), findsOneWidget);
+    });
+
+    testWidgets('a valid experience is summarised and appears in About Me', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await tapCard(tester, 'Add Experience');
+
+      // The dropdown starts on the Django model's default category.
+      expect(find.text('Full-Time'), findsOneWidget);
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Volunteer').last);
+      await tester.pumpAndSettle();
+
+      await fill(tester, 'Role / Position', '  Software Engineer Intern ');
+      await fill(tester, 'Description', 'Built internal tools in Flutter.');
+      await fill(tester, 'Thumbnail URL', 'https://example.com/thumb.png');
+      final endedAt = await pickFirstOfMonth(tester);
+      final endDateText = formatDate(tester, endedAt);
+      await tapSave(tester, label: saveExperience);
+
+      final dialog = find.byType(AlertDialog);
+      expect(
+        find.descendant(
+          of: dialog,
+          matching: find.text('Experience added successfully!'),
+        ),
+        findsOneWidget,
+      );
+      for (final line in [
+        'Role / Position: Software Engineer Intern',
+        'Category: Volunteer',
+        'Description: Built internal tools in Flutter.',
+        'Thumbnail: https://example.com/thumb.png',
+        'End date: $endDateText',
+      ]) {
+        expect(
+          find.descendant(of: dialog, matching: find.text(line)),
+          findsOneWidget,
+        );
+      }
+
+      final saved = ExperienceStore.experiences.value.last;
+      expect(saved.title, 'Software Engineer Intern');
+      expect(saved.endedAt, endedAt);
+      expect(saved.isLocalDraft, isTrue);
+
+      // OK closes only the dialog: the form is still open, and reset.
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(dialog, findsNothing);
+      expect(find.byType(ExperienceFormPage), findsOneWidget);
+      for (final textField in tester.widgetList<TextFormField>(
+        find.byType(TextFormField),
+      )) {
+        expect(textField.controller!.text, isEmpty);
+      }
+      expect(find.text('Full-Time'), findsOneWidget);
+      expect(find.byTooltip('Clear end date'), findsNothing);
+
+      await openDrawerAndTap(tester, 'Home');
+      await tapCard(tester, 'About Me');
+      expect(find.text('Software Engineer Intern'), findsOneWidget);
+      expect(find.text('Not synced'), findsOneWidget);
+      expect(find.text('Ended $endDateText'), findsOneWidget);
+    });
+
+    testWidgets('Save stays reachable on a phone with the keyboard open', (
+      tester,
+    ) async {
+      const screenHeight = 640.0;
+      const keyboardHeight = 300.0;
+      tester.view.physicalSize = const Size(320, screenHeight);
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.viewInsets = const FakeViewPadding(bottom: keyboardHeight);
+      addTearDown(tester.view.reset);
+
+      await pumpApp(tester);
+      await openDrawerAndTap(tester, 'Add Experience');
+      await fillRequired(tester);
+      await fill(tester, 'Thumbnail URL', 'https://example.com/thumb.png');
+
+      final save = find.text(saveExperience);
+      await tester.ensureVisible(save);
+      await tester.pumpAndSettle();
+      // The button is scrolled into the space above the keyboard.
+      expect(
+        tester.getRect(save).bottom,
+        lessThanOrEqualTo(screenHeight - keyboardHeight),
+      );
+
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.byType(AlertDialog), findsOneWidget);
+    });
+  });
+
   group('Drawer navigation', () {
     testWidgets('opens from the home screen and lists every screen', (
       tester,
@@ -349,7 +630,12 @@ void main() {
 
       final drawer = find.byType(LeftDrawer);
       expect(drawer, findsOneWidget);
-      for (final entry in ['Home', 'View Projects', 'Add Project']) {
+      for (final entry in [
+        'Home',
+        'View Projects',
+        'Add Project',
+        'Add Experience',
+      ]) {
         expect(
           find.descendant(of: drawer, matching: find.text(entry)),
           findsOneWidget,
