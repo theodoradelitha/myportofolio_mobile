@@ -1,7 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/data/project_store.dart';
 import 'package:myportofolio_mobile/models/project.dart';
+import 'package:myportofolio_mobile/utils/validators.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
+import 'package:myportofolio_mobile/widgets/summary_dialog.dart';
 
 class ProjectFormPage extends StatefulWidget {
   const ProjectFormPage({super.key});
@@ -42,14 +44,11 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
     super.dispose();
   }
 
-  String? _validateTitle(String? value) {
-    final title = value?.trim() ?? '';
-    if (title.isEmpty) return 'Project title cannot be empty.';
-    if (title.length > _maxTitleLength) {
-      return 'Title must be at most $_maxTitleLength characters.';
-    }
-    return null;
-  }
+  String? _validateTitle(String? value) => Validators.requiredText(
+    value,
+    fieldName: 'Project title',
+    maxLength: _maxTitleLength,
+  );
 
   String? _validateTechStack(String? value) {
     final techStack = value?.trim() ?? '';
@@ -67,20 +66,6 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
     if (description.length < _minDescriptionLength) {
       return 'Description must be at least $_minDescriptionLength characters.';
     }
-    return null;
-  }
-
-  /// The link is optional, but if one is given it must be a full web address.
-  String? _validateLink(String? value) {
-    final link = value?.trim() ?? '';
-    if (link.isEmpty) return null;
-
-    final uri = Uri.tryParse(link);
-    final isWebUrl =
-        uri != null &&
-        (uri.scheme == 'http' || uri.scheme == 'https') &&
-        uri.host.isNotEmpty;
-    if (!isWebUrl) return 'Enter a full link starting with http:// or https://';
     return null;
   }
 
@@ -109,34 +94,16 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
 
     // showDialog pushes the dialog as a new route and its Future completes
     // when that route is popped, by OK or by tapping outside the dialog.
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Project added successfully!'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _ProjectDetail(label: 'Title', value: project.title),
-              _ProjectDetail(label: 'Category', value: project.category!),
-              _ProjectDetail(
-                label: 'Tech stack',
-                value: project.techStack.join(', '),
-              ),
-              _ProjectDetail(label: 'Description', value: project.description),
-              _ProjectDetail(label: 'Link', value: project.link ?? '-'),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            // Pop with the dialog's own context so only the dialog closes.
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+    await showSummaryDialog(
+      context,
+      title: 'Project added successfully!',
+      rows: [
+        SummaryRow(label: 'Title', value: project.title),
+        SummaryRow(label: 'Category', value: project.category!),
+        SummaryRow(label: 'Tech stack', value: project.techStack.join(', ')),
+        SummaryRow(label: 'Description', value: project.description),
+        SummaryRow(label: 'Link', value: project.link ?? '-'),
+      ],
     );
 
     // The page may have been closed while the dialog was open.
@@ -234,7 +201,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                   hintText: 'https://… (optional)',
                 ),
                 keyboardType: TextInputType.url,
-                validator: _validateLink,
+                validator: Validators.optionalWebUrl,
               ),
               const SizedBox(height: 24.0),
               FilledButton.icon(
@@ -244,32 +211,6 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// One "Label: value" line in the confirmation dialog.
-class _ProjectDetail extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _ProjectDetail({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: '$label: ',
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-            TextSpan(text: value),
-          ],
         ),
       ),
     );
