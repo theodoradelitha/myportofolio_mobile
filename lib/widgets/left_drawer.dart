@@ -1,10 +1,11 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/screens/experience_form_page.dart';
 import 'package:myportofolio_mobile/screens/project_form_page.dart';
 import 'package:myportofolio_mobile/screens/project_list_page.dart';
 import 'package:myportofolio_mobile/theme/app_colors.dart';
 
 /// The screens that can be opened from the drawer.
-enum DrawerDestination { home, projects, addProject }
+enum DrawerDestination { home, projects, addProject, addExperience }
 
 /// Navigation menu that slides in from the left of every main screen.
 class LeftDrawer extends StatelessWidget {
@@ -26,22 +27,28 @@ class LeftDrawer extends StatelessWidget {
     // screen avoids having two home screens in the stack.
     bool isHome(Route<dynamic> route) => route.isFirst;
 
-    if (destination == DrawerDestination.home) {
-      navigator.popUntil(isHome);
-      return;
+    // Remove every screen above home, then open the new one on top of it.
+    // The stack is always [home, page], so Back returns to home and the same
+    // screen is never stacked twice.
+    void openOnTopOfHome(Widget page) {
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute<void>(builder: (_) => page),
+        isHome,
+      );
     }
 
-    // Remove every screen above home, then open the new one on top of it.
-    // The stack is always [home, destination], so Back returns to home and
-    // the same screen is never stacked twice.
-    navigator.pushAndRemoveUntil(
-      MaterialPageRoute<void>(
-        builder: (_) => destination == DrawerDestination.projects
-            ? const ProjectListPage()
-            : const ProjectFormPage(),
-      ),
-      isHome,
-    );
+    // A switch over an enum must cover every value, so adding a destination
+    // without deciding where it goes is a compile error.
+    switch (destination) {
+      case DrawerDestination.home:
+        navigator.popUntil(isHome);
+      case DrawerDestination.projects:
+        openOnTopOfHome(const ProjectListPage());
+      case DrawerDestination.addProject:
+        openOnTopOfHome(const ProjectFormPage());
+      case DrawerDestination.addExperience:
+        openOnTopOfHome(const ExperienceFormPage());
+    }
   }
 
   Widget _buildTile(
@@ -107,6 +114,12 @@ class LeftDrawer extends StatelessWidget {
             destination: DrawerDestination.addProject,
             icon: Icons.add_circle_outline,
             label: 'Add Project',
+          ),
+          _buildTile(
+            context,
+            destination: DrawerDestination.addExperience,
+            icon: Icons.work_outline,
+            label: 'Add Experience',
           ),
         ],
       ),
