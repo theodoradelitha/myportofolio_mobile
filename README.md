@@ -4,7 +4,7 @@
 **NPM:** 2506553585  
 **Class:** PBP KKI  
 
-MyPortfolio Mobile is the Flutter client for my personal portfolio website (built with Django in Assignments 1–6). It shows my identity, my portfolio projects and experience, and lets me draft new projects from my phone. In a later tutorial it will be connected to the Django REST API (`/api/v1/`) I built in Tutorial 07.
+MyPortfolio Mobile is the Flutter client for my personal portfolio website (built with Django in Assignments 1–6). It shows my identity, my portfolio projects and experience, and lets me draft new projects and experiences from my phone. In a later tutorial it will be connected to the Django REST API (`/api/v1/`) I built in Tutorial 07.
 
 ---
 
@@ -12,14 +12,15 @@ MyPortfolio Mobile is the Flutter client for my personal portfolio website (buil
 
 - **Profile info cards:** three `InfoCard`s showing my NPM, full name and class.
 - **Welcome header:** styled like the hero section of my website, with a serif greeting, my roles (Front-End Developer, UI/UX Design, UX Researcher) as outlined chips, and two tilted stars on the sides.
-- **Action menu:** four `ItemCard`s, each with its own icon and background color from my website's palette (maroon, olive, dusty rose and wine red). Every tap shows a `SnackBar`: *"You pressed the [Button Name] button!"*
+- **Action menu:** five `ItemCard`s, each with its own icon and background color from my website's palette (maroon, olive, vintage burgundy, dusty rose and wine red). Every tap shows a `SnackBar`: *"You pressed the [Button Name] button!"*
   - **View Projects:** opens a list of my portfolio projects (OH26, DDP026, Symbiocle) with tech-stack chips.
   - **Add Project:** a validated form (title, category dropdown, tech stack, description, optional link). Saving shows the entered data in a dialog and clears the form. Saved projects also show up in View Projects, marked *Not synced* because they are kept in memory only.
-  - **About Me:** a bottom sheet with my roles and experience.
+  - **Add Experience:** a validated form that follows the Experience model of my Django portfolio: role/position, category dropdown, description, optional thumbnail URL, and an optional end date chosen with a date picker (empty means the experience is ongoing). Saving shows every entered value in a dialog and clears the form. The new experience also shows up in About Me, marked *Not synced*.
+  - **About Me:** a bottom sheet with my roles and experience, including experiences added from the app.
   - **Logout:** a confirmation dialog. There is no login yet, so confirming tells the user that logout will be connected to Django authentication later instead of pretending to log out.
-- **Drawer navigation:** a `LeftDrawer` on every screen with Home, View Projects and Add Project. Home goes back to the existing home screen, and other screens open on top of home, so the same screen is never stacked twice.
+- **Drawer navigation:** a `LeftDrawer` on every screen with Home, View Projects, Add Project and Add Experience. Home goes back to the existing home screen, and other screens open on top of home, so the same screen is never stacked twice.
 - **Design matching my portfolio website:** the same maroon and cream palette (`AppColors`, named after the CSS variables of the website), the same fonts (Butler for headings, TT Chocolates for body text, Genty for project titles), outlined chips and the star decoration from the website. All of it is set up once in `AppTheme`, so the widgets don't hardcode their own styles.
-- **Responsive layout:** the page scrolls, the content is width-capped on web/desktop, the action grid switches between 2 and 4 columns, and the layout is tested at 320×640 without overflow.
+- **Responsive layout:** the pages scroll, the content is width-capped on web/desktop, the action grid uses 2, 3 or 5 columns depending on the width, and the layout is tested at 320×640 without overflow, including the experience form with the keyboard open.
 - **Widget tests** for all of the above, plus a check that the cream text on every action card meets the WCAG AA contrast ratio.
 
 ## Tech Stack
@@ -60,17 +61,21 @@ lib/
 ├── models/
 │   ├── item_homepage.dart        # Action card data: name, icon, color, optional action
 │   ├── project.dart              # Project data model
-│   └── experience.dart           # Experience data model
+│   └── experience.dart           # Experience data model (fields and categories from Django)
 ├── data/
 │   ├── portfolio_data.dart       # Static content copied from my Django portfolio
-│   └── project_store.dart        # In-memory project list shared between pages
+│   ├── project_store.dart        # In-memory project list shared between pages
+│   └── experience_store.dart     # In-memory experience list (form → About Me)
 ├── screens/
 │   ├── menu.dart                 # MyHomePage (StatelessWidget) and its action grid
 │   ├── project_list_page.dart    # View Projects page
-│   └── project_form_page.dart    # Add Project form (StatefulWidget) and its dialog
+│   ├── project_form_page.dart    # Add Project form (StatefulWidget)
+│   └── experience_form_page.dart # Add Experience form (StatefulWidget)
 ├── theme/
 │   ├── app_colors.dart           # Color palette from my website's CSS variables
 │   └── app_theme.dart            # ThemeData: colors, fonts and component styles
+├── utils/
+│   └── validators.dart           # Validation rules shared by both forms
 └── widgets/
     ├── info_card.dart            # InfoCard
     ├── item_card.dart            # ItemCard (InkWell + SnackBar)
@@ -78,6 +83,7 @@ lib/
     ├── profile_header.dart       # Welcome header with role chips and stars
     ├── project_card.dart         # Card for one project
     ├── about_sheet.dart          # About Me bottom sheet
+    ├── summary_dialog.dart       # AlertDialog that summarises a saved form
     └── portfolio_star.dart       # Star decoration from my website (CustomPainter)
 assets/
 └── fonts/
@@ -96,6 +102,7 @@ test/
 - **Assignment 7:** Replaced the sample data with my own identity, gave every action card its own color through the `ItemHomepage` model, made the layout responsive, and added working View Projects, Add Project (with validation), About Me and Logout-confirmation flows. Moved reusable widgets and models into their own folders, switched the UI text to English, and replaced the default counter test with widget tests. Restyled the app to match my portfolio website: its color palette, fonts (Butler, TT Chocolates, Genty), chip and card styles, and the star decoration, all centralized in `AppTheme`. The work was done on the `feat/assignment-seven` branch with Conventional Commits.
 - **Tutorial 09:** Added a `LeftDrawer` for navigating between Home, View Projects and Add Project, extended the Add Project form with a category `DropdownButtonFormField` and an optional, validated project link, showed the submitted data in an `AlertDialog` that resets the form, moved `menu.dart` into `screens/`, and switched the Material imports to `material_ui`. The work was done on the `feat/tutorial-nine` branch.
   - **Navigation choices:** `Navigator.push()` opens View Projects and Add Project from the home cards and the list's button, so Back returns to the previous screen. `Navigator.pop()` closes the drawer and the dialog. The drawer does not use `pushReplacement(MyHomePage())` like the tutorial example, because opening Home that way from another screen leaves two home screens in the stack. Instead, Home uses `popUntil` to go back to the existing home screen, and the other entries use `pushAndRemoveUntil`, so the stack is always home plus one screen.
+- **Assignment 8:** Added an Add Experience form (`ExperienceFormPage`) based on the Experience model of my Django portfolio, with a category dropdown, a `showDatePicker` end date, and validation for empty, whitespace-only, too long and malformed input. It opens from a new action card (`Navigator.push`) and a new drawer entry, shows a summary `AlertDialog` after a valid save, and adds the experience to About Me. Moved the link check and the summary dialog into shared code (`Validators`, `showSummaryDialog`) so both forms use the same logic, made the action grid use 2, 3 or 5 columns, and added widget tests for the new navigation, validation, dialog and keyboard layout (30 tests in total). The work was done on the `feat/assignment-eight` branch.
 
 ---
 
@@ -281,3 +288,252 @@ For this assignment, I mainly used AI as a learning assistant while implementing
 - `can you review my code and tell me if there are any problems or things i should improve?`
 
 - `can you quiz me about my code so i can understand how it works better?`
+
+---
+
+### Assignment 8
+
+**1. `Navigator.push()`, `Navigator.pushReplacement()` and `Navigator.pop()`**
+
+In Flutter, the `Navigator` manages pages using a stack. The page at the top of the stack is the one currently displayed.
+
+- **`Navigator.push()`:** Adds a new page on top of the current page. The previous page stays underneath, so pressing Back returns to it.
+- **`Navigator.pushReplacement()`:** Replaces the current page with a new one. The previous page is removed, so pressing Back skips it.
+- **`Navigator.pop()`:** Removes the current page and returns to the page underneath. It can also return a value to the previous page.
+
+In my application, the **Add Experience** action card uses `Navigator.push()`. In `menu.dart`, `_openExperienceForm` calls `Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExperienceFormPage()))`. This means the navigation stack becomes `[home, experience form]`. When the user presses Back, the experience form is removed and the original home page appears again.
+
+I also use `Navigator.pop()` in a few places:
+- Closing the navigation drawer.
+- Closing dialogs after the user finishes interacting with them.
+- Returning to the previous page when necessary.
+
+For example, my logout confirmation dialog returns `true` or `false` depending on the user's choice. I use `Navigator.pop(true)` when the user confirms and retrieve that value through `await showDialog(...)`.
+
+One interesting part of my implementation is how I handle the **Home** option in the drawer. Instead of using `pushReplacement(MyHomePage())` like the tutorial example, I use `popUntil((route) => route.isFirst)`.
+
+This is because I don't want to create another instance of the home page every time the user navigates back to it. If I used `pushReplacement()` from the experience form, the stack could become `[home, home]`, which means pressing Back would show another home page.
+
+My drawer navigation handles this differently:
+1. It first closes the drawer using `navigator.pop()`.
+2. If the user selects Home, it uses `navigator.popUntil((route) => route.isFirst)` to return to the original home page.
+3. If the user selects another destination, it uses `pushAndRemoveUntil(page, (route) => route.isFirst)` to remove any existing page above Home and open the selected page.
+
+This keeps the navigation stack consistent, with Home as the first page and only one other page above it.
+
+**2. How `Scaffold`, `AppBar` and `Drawer` keep the pages consistent**
+
+In my application, all four main screens (`MyHomePage`, `ProjectListPage`, `ProjectFormPage` and `ExperienceFormPage`) use a `Scaffold`.
+
+A `Scaffold` provides the basic visual structure of a Material Design page. It has several properties that I use consistently:
+
+- **`appBar`:** Displays the top navigation bar and the title of the current page.
+- **`drawer`:** Provides the navigation menu on the left side of the screen.
+- **`body`:** Contains the main content of each page.
+
+For example, the home page has the title *MyPortfolio*, while the experience form has *Add Experience*. Even though their contents are different, they share the same overall page structure.
+
+I created a reusable `LeftDrawer` widget instead of implementing the drawer separately on every page. Each page passes a different `current` value to indicate which menu item should be highlighted.
+
+This makes it easier to maintain the navigation because I only need to update the drawer in one place if I want to add or modify an entry.
+
+The appearance is also consistent because I use a centralized theme through `AppTheme.light`, which is provided by `MaterialApp`.
+
+For example:
+- `AppColors.maroonMain` is used as the background color of the AppBar, the drawer header and the filled buttons.
+- `AppColors.cream` is used for text field backgrounds and dialog backgrounds.
+- The typography and other component styles are also defined in `AppTheme`.
+
+This means individual pages don't need to repeatedly define their own colors and styles. They can use the same theme, making the application easier to maintain and visually consistent with my original Django portfolio website.
+
+**3. Why the form uses this layout**
+
+The Add Experience form uses a `Form` inside a `SingleChildScrollView`, with a `Column` to arrange its fields vertically.
+
+Its general widget structure looks like this:
+
+```text
+Scaffold
+└── Form
+    └── SingleChildScrollView
+        └── Center
+            └── ConstrainedBox (maxWidth: 720)
+                └── Column
+                    ├── Note text
+                    ├── TextFormField (Role / Position)
+                    ├── DropdownButtonFormField (Category)
+                    ├── TextFormField (Description)
+                    ├── TextFormField (Thumbnail URL)
+                    ├── TextFormField (End date)
+                    └── FilledButton (Save Experience)
+```
+
+I chose this layout because the form has a relatively small number of fields, so using a `Column` is sufficient.
+
+There are several reasons why I combined these widgets:
+
+- **`Column`:** Arranges all the form fields vertically. Since it builds all its children, the form fields are available when I call `validate()` or `reset()`. This is useful because I don't want to depend on whether a field has been built yet.
+- **`SingleChildScrollView`:** Allows the form to scroll when its content is taller than the available screen space. Without it, smaller screens could show a RenderFlex overflow error, and users might not be able to reach the Save button.
+- **`Center` and `ConstrainedBox`:** Keep the form centered and prevent it from becoming too wide on desktop or web. I use a maximum width of 720 pixels, similar to my home page.
+- **`SizedBox`:** Adds consistent spacing between the fields and the Save button.
+- **`Padding`:** Keeps the form content away from the edges of the screen.
+- **`crossAxisAlignment: CrossAxisAlignment.stretch`:** Makes the form fields and button fill the available width inside the constrained area.
+
+Another important consideration is the keyboard.
+
+When a user types on a phone, the keyboard takes up part of the screen. Flutter's `Scaffold` normally resizes its body when the keyboard appears because `resizeToAvoidBottomInset` is enabled by default.
+
+The `SingleChildScrollView` allows the user to scroll through the remaining visible space, so the fields and Save button can still be accessed without overflowing.
+
+I also use `keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag`, which dismisses the keyboard when the user starts dragging the form.
+
+I tested this behavior at a screen size of 320 × 640 pixels with a simulated 300-pixel keyboard. This leaves very little room for the form, but the user can still scroll to the Save button.
+
+One other detail is `isExpanded: true` in my category dropdown. This makes the dropdown use the available width instead of sizing itself based on its longest item. It helps prevent horizontal overflow on smaller screens.
+
+**4. `GlobalKey<FormState>`, `validator` and `validate()`**
+
+In my Add Experience form, I use a `GlobalKey<FormState>` to access and control the form from outside its widget tree.
+
+I create `_formKey` inside the `State` class and pass it to the `Form` widget:
+
+```dart
+final _formKey = GlobalKey<FormState>();
+```
+
+This allows me to access the form's state through `_formKey.currentState`.
+
+I mainly use it for two operations:
+
+- **`validate()`:** Checks whether all the form fields contain valid input.
+- **`reset()`:** Resets the form fields after a successful submission.
+
+Each `TextFormField` has a `validator` function. A validator receives the current field value and returns an error message if the input is invalid, or `null` if the input is valid.
+
+For example, my Role / Position field is required and cannot exceed 255 characters, following the `max_length=255` rule in my Django Experience model.
+
+My other validation rules include:
+
+- **Role / Position:** Cannot be empty or contain only whitespace, and must not exceed 255 characters.
+- **Description:** Required.
+- **Category:** Must be one of the six available categories from my Django model.
+- **Thumbnail URL:** Optional, but if provided, it must be a valid URL starting with `http://` or `https://` and contain a host.
+- **End date:** Selected through a date picker. Leaving it empty means the experience is ongoing.
+
+I also moved reusable validation logic into `lib/utils/validators.dart`, so the Add Project and Add Experience forms can share the same validation rules instead of duplicating them.
+
+When the user presses Save, `_submit()` calls:
+
+```dart
+_formKey.currentState!.validate()
+```
+
+This runs the validators for all the fields. If at least one field is invalid, Flutter displays the corresponding error messages and the submission stops.
+
+If every field is valid, the application creates an `Experience` object, adds it to `ExperienceStore`, and displays a summary dialog containing the submitted information. After the user confirms the dialog, the form is reset.
+
+There are two examples that helped me understand why validation is important:
+
+**Example 1: Whitespace-only input**
+
+If a user enters `"   "` as their role, the field technically contains text. However, it shouldn't count as a valid role.
+
+That's why my validator trims the input using `.trim()` before checking whether it is empty. After removing the whitespace, nothing remains, so the validator returns an error message.
+
+**Example 2: Invalid URL format**
+
+A user might enter `www.example.com/thumb.png` as their thumbnail URL.
+
+Even though this looks like a website address, it doesn't include an HTTP or HTTPS scheme. Also, setting `keyboardType: TextInputType.url` doesn't actually validate the input. It only changes the keyboard layout on supported devices to make entering URLs easier.
+
+I therefore use URL validation to check the scheme and host instead of relying on the keyboard type.
+
+The end date is slightly different because I use a read-only field that opens `showDatePicker()`. The user cannot directly type an arbitrary date. I also restrict the selectable dates to the period between 2000 and today, since an end date should represent an experience that has already finished.
+
+Overall, I learned that input widgets make it easier for users to enter information, while validators are responsible for checking whether that information follows the rules of the application.
+
+---
+
+### AI Disclosure & Reflection (Assignment 8)
+
+**1. Tools Used:** Claude (Claude Code, running in VS Code)
+
+**2. Prompting Strategy:**
+
+For this assignment, I mainly used Claude as a learning assistant while working on my Flutter application. Whenever I encountered something I didn't understand or wasn't sure how to implement, I asked questions to get a better understanding of the concepts and possible solutions.
+
+I used it to discuss my implementation, understand how certain widgets and Flutter features work, and troubleshoot errors that I encountered along the way. I also asked it to explain things using examples from my own code instead of only giving general explanations, since that made it easier for me to understand how everything worked together.
+
+I didn't always understand the first explanation, so I often asked follow-up questions until I understood the reasoning behind a particular implementation. I also used it to review parts of my code and suggest improvements when I felt that something could be simplified or handled better.
+
+**3. Specific Assisted Parts:**
+
+- **Flutter Navigation:** I asked Claude about the differences between `Navigator.push()`, `Navigator.pushReplacement()` and `Navigator.pop()`, especially how they affect the navigation stack in my application.
+
+- **Widget Layout:** I consulted Claude when I was working on the Add Experience form and wanted to understand how `Form`, `Column` and `SingleChildScrollView` work together. I also asked about handling smaller screen sizes and the keyboard.
+
+- **Form Validation:** I asked questions about `GlobalKey<FormState>`, validators and how `validate()` and `reset()` work. I also discussed how to handle inputs such as whitespace-only text and URLs.
+
+- **Code Reusability:** I asked how I could avoid repeating the same validation logic in my Add Project and Add Experience forms, and how to organize shared code into separate files.
+
+- **Debugging:** Whenever I encountered errors or unexpected behavior, I shared the relevant code or error messages and asked for help understanding what was causing them. This included layout overflow, dropdown behavior and widget test issues.
+
+- **Code Review:** I occasionally asked Claude to check my implementation and point out things that could be improved, especially regarding widget structure, navigation and responsiveness.
+
+**4. Critical Analysis of AI Limitations & Manual Fixes:**
+
+- **Understanding Before Using Suggestions:** Sometimes Claude gave explanations or solutions that I didn't immediately understand. I had to ask additional questions and look at how the suggested solution related to my existing code before applying it.
+
+- **Navigation:** I initially considered following the tutorial's approach of using `pushReplacement()` when navigating back to Home. However, after discussing how the navigation stack works, I realized that this could create duplicate home pages. I used `popUntil()` instead to return to the existing home page.
+
+- **Layout and Responsiveness:** My initial grid layout caused some action card labels to overflow at certain screen widths. I had to check the layout at different sizes and adjust the breakpoints rather than assuming the suggested layout would work everywhere.
+
+- **Form Validation:** I learned that some properties don't automatically validate user input. For example, `TextInputType.url` only changes the keyboard layout and doesn't check whether the entered URL is valid. I needed to understand this distinction and use separate validation logic.
+
+- **Existing Project Structure:** Since this assignment continues from my previous tutorial, I had to make sure that new implementations followed the structure of my existing application. Some suggestions needed adjustments to match my Django Experience model and the way I had organized my Flutter project.
+
+- **Testing:** I didn't rely only on whether the code looked correct. I used widget tests and checked the application through `flutter analyze` and `flutter build web` to make sure the implementation worked as expected.
+
+- **Learning Independently:** I realized that getting a solution from AI doesn't necessarily mean I understand it. I found it more useful to ask why something works and how it affects the rest of my application, especially since I might need to explain my code during the evaluation.
+
+**5. How I Verified the Result:**
+
+After completing the implementation, I checked the application using several methods:
+
+- `flutter analyze` reports no issues.
+- `flutter test` passes all 30 widget tests:
+  - 22 existing tests from Assignment 7 and Tutorial 09.
+  - 1 additional SnackBar test for the new action card.
+  - 7 new tests for the Add Experience feature.
+- `flutter build web` completes successfully.
+- I also checked the responsive layout, including the experience form with the keyboard open, to make sure the Save button remained accessible.
+
+**6. Prompting History/Log (excerpts):**
+
+- `im still confused about how navigator works. can you explain the difference between push, pushreplacement and pop using my app?`
+
+- `wait so if i use pushreplacement to go home, does that mean im creating a new homepage?`
+
+- `can you explain what actually happens to the navigation stack when i open the experience form from home?`
+
+- `im adding the experience form now. can you help me understand how i should structure the fields based on my django model?`
+
+- `why do we need both form and singlechildscrollview? cant we just use a column?`
+
+- `what happens to the form when the keyboard opens on a phone? how does flutter handle the remaining space?`
+
+- `im still a bit confused about globalkey. what does it actually let me access?`
+
+- `so validate() basically checks all the validators inside the form? what happens if one of them returns an error?`
+
+- `why is www.example.com not considered a valid url by my validator?`
+
+- `how do i make the validation reusable for both forms without repeating the same code?`
+
+- `my dropdown seems to overflow on a smaller screen. can you explain why this happens?`
+
+- `can you help me check whether my widget structure is unnecessarily complicated?`
+
+- `can you walk me through my experience form code? i want to make sure i actually understand what each part does before my evaluation.`
+
+---
