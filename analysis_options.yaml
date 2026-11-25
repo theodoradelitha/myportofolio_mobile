@@ -18,6 +18,8 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
+    # Output of build_runner (json_serializable), created on each build.
+    - "**/*.g.dart"
 
 linter:
   # The lint rules applied to this project can be customized in the
