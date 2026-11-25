@@ -1,5 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Needed to call the Django REST API. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- usesCleartextTraffic allows plain HTTP for local development against
+         http://10.0.2.2:8000. Remove or disable it for production release
+         builds that talk to the backend only over HTTPS. -->
     <application
+        android:usesCleartextTraffic="true"
         android:label="myportofolio_mobile"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
