@@ -4,12 +4,15 @@ import 'package:myportofolio_mobile/models/item_homepage.dart';
 import 'package:myportofolio_mobile/screens/experience_form_page.dart';
 import 'package:myportofolio_mobile/screens/project_form_page.dart';
 import 'package:myportofolio_mobile/screens/project_list_page.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/app_colors.dart';
 import 'package:myportofolio_mobile/widgets/about_sheet.dart';
+import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/item_card.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/profile_header.dart';
+import 'package:provider/provider.dart';
 
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
@@ -56,9 +59,12 @@ class MyHomePage extends StatelessWidget {
         .push(MaterialPageRoute(builder: (_) => const ProjectListPage()));
   }
 
-  static void _openProjectForm(BuildContext context) {
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (_) => const ProjectFormPage()));
+  /// Adding a project needs a logged-in owner, so the login screen opens
+  /// first when there is no token.
+  static Future<void> _openProjectForm(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    if (!await ensureLoggedIn(context) || !navigator.mounted) return;
+    navigator.push(MaterialPageRoute(builder: (_) => const ProjectFormPage()));
   }
 
   // push() keeps the home screen underneath, so the system Back button and
@@ -78,6 +84,12 @@ class MyHomePage extends StatelessWidget {
   }
 
   static Future<void> _confirmLogout(BuildContext context) async {
+    final authState = context.read<AuthState>();
+    if (!authState.isLoggedIn) {
+      _showMessage(context, "You're not logged in.");
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -102,17 +114,21 @@ class MyHomePage extends StatelessWidget {
 
     if (confirmed != true || !context.mounted) return;
 
-    // There is no login yet, so be upfront instead of pretending to log out.
-    ScaffoldMessenger.of(context)
+    // Capture the messenger before the await: the card's context may be
+    // gone by the time the request finishes.
+    final messenger = ScaffoldMessenger.of(context);
+    await authState.logout();
+    messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Logout will work once the app is connected to Django '
-            'authentication.',
-          ),
-        ),
+        const SnackBar(content: Text('You have been logged out.')),
       );
+  }
+
+  static void _showMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override

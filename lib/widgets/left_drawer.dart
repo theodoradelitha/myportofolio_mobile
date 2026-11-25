@@ -2,7 +2,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/experience_form_page.dart';
 import 'package:myportofolio_mobile/screens/project_form_page.dart';
 import 'package:myportofolio_mobile/screens/project_list_page.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/app_colors.dart';
+import 'package:myportofolio_mobile/widgets/auth_guard.dart';
+import 'package:provider/provider.dart';
 
 /// The screens that can be opened from the drawer.
 enum DrawerDestination { home, projects, addProject, addExperience }
@@ -15,7 +18,10 @@ class LeftDrawer extends StatelessWidget {
 
   const LeftDrawer({super.key, required this.current});
 
-  void _navigate(BuildContext context, DrawerDestination destination) {
+  Future<void> _navigate(
+    BuildContext context,
+    DrawerDestination destination,
+  ) async {
     final navigator = Navigator.of(context);
 
     // The open drawer is part of the current route, so pop() closes it.
@@ -45,6 +51,9 @@ class LeftDrawer extends StatelessWidget {
       case DrawerDestination.projects:
         openOnTopOfHome(const ProjectListPage());
       case DrawerDestination.addProject:
+        // Called before any await, while the drawer's context is mounted.
+        // After the await only the captured navigator is used.
+        if (!await ensureLoggedIn(context) || !navigator.mounted) return;
         openOnTopOfHome(const ProjectFormPage());
       case DrawerDestination.addExperience:
         openOnTopOfHome(const ExperienceFormPage());
@@ -65,9 +74,34 @@ class LeftDrawer extends StatelessWidget {
     );
   }
 
+  Future<void> _login(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    Navigator.of(context).pop();
+    if (await ensureLoggedIn(context)) {
+      _showMessage(messenger, 'Logged in successfully.');
+    }
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final authState = context.read<AuthState>();
+    Navigator.of(context).pop();
+    await authState.logout();
+    _showMessage(messenger, 'You have been logged out.');
+  }
+
+  void _showMessage(ScaffoldMessengerState messenger, String message) {
+    if (!messenger.mounted) return;
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    // watch (not read) so the drawer rebuilds when the user logs in or out.
+    final isLoggedIn = context.watch<AuthState>().isLoggedIn;
 
     return Drawer(
       backgroundColor: AppColors.bgCreamLight,
@@ -121,6 +155,19 @@ class LeftDrawer extends StatelessWidget {
             icon: Icons.work_outline,
             label: 'Add Experience',
           ),
+          const Divider(),
+          if (isLoggedIn)
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () => _logout(context),
+            )
+          else
+            ListTile(
+              leading: const Icon(Icons.login),
+              title: const Text('Login'),
+              onTap: () => _login(context),
+            ),
         ],
       ),
     );
